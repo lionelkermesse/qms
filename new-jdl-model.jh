@@ -1,0 +1,211 @@
+
+enum Role {
+    ADMIN, AUDITOR, CLIENT, PROSPECT
+}
+
+enum StructureType {
+    GENERAL_MEDECINE, DENTAL_MEDECINE
+}
+
+enum StructureActivity {
+    AUDONTOLOGY, GENERAL_MEDECINE, PEDIATRIC_MEDECINE, GENICOLOGIC_MEDECINE, SURGERY_MEDECINE
+}
+
+enum Language {
+    FRENCH, ENGLISH, SPANISH
+}
+
+enum AnswerGroupType {
+    MULTI, SINGLE
+}
+
+entity User {
+	name String
+    responsability String
+}
+
+entity Client {
+	subscriptionCode String required
+}
+
+entity Auditor
+entity Admin
+
+entity Account {
+	login String required,
+	password String required,
+	email String required,
+    role Role
+}
+
+entity Address {
+	street String,
+    number String,
+	zipCode String,
+	state String,
+	city String,
+    country String,
+}
+
+
+entity SilentPartner {
+	firstName String,
+	lastName String,
+	function String
+}
+
+
+/**
+ * The Employee entity.
+ */
+entity Structure {
+	name String,
+	type StructureType,
+    siret String,
+	nbServices Integer,
+    nbEmployees Integer,
+	phoneNumber String,
+    email String
+    address Address,
+    silentPartner SilentPartner
+}
+
+entity FormulationRequest {
+	context String,
+    difficultyOrigin String,
+    workingMode String,
+    expectation String,
+    achievementTargetDate Instant,
+    constraints String,
+  	language Language,
+	createdAt Instant,
+	updatedAt Instant
+}
+
+entity FormulationResponse {
+    userId String,
+    content String,
+	createdAt Instant,
+	updatedAt Instant
+}
+
+entity QuizItem {
+	status String,
+    version Long,
+    refCode String,
+	createdAt Instant,
+	updatedAt Instant
+}
+
+entity Quiz {
+    title String
+}
+
+entity Thematic {
+    title String
+}
+
+entity Question {
+    title String
+}
+
+entity QuizType {
+	name String,
+    activities StructureActivity,
+	createdAt Instant,
+	updatedAt Instant
+}
+
+entity Answer {
+	title String,
+    value Integer,
+    status String
+}
+
+entity AnswerGroup {
+    answerId Long,
+    type AnswerGroupType
+}
+
+entity QuizAnswer {
+	userId Long,
+	observation String,
+    score Integer,
+	createdAt Instant,
+	updatedAt Instant
+}
+
+entity ThematicSynthesis {
+	userId Long,
+	synthesis String,
+    total Integer,
+    createdAt Instant,
+	updatedAt Instant
+}
+
+entity ClientAnswer {
+    clientId Long,
+    questionId Long,
+	answerId Long,
+	createdAt Instant,
+	updatedAt Instant
+}
+
+relationship OneToOne {
+	Account to User{account}
+	User to Client{user}
+    User to Auditor{user}
+    User to Admin{user} 
+}
+
+relationship OneToOne {
+	FormulationRequest to FormulationResponse{request}
+	User to Client{user}
+    User to Auditor{user}
+    User to Admin{user} 
+}
+
+
+relationship OneToOne {
+	QuizType to Quiz{type}
+    QuizItem to Quiz{item}
+    QuizItem to Thematic{item}
+    QuizItem to Question{item}
+    QuizItem to AnswerGroup{item}
+    AnswerGroup to Question{group} 
+}
+
+relationship ManyToMany {
+	Thematic{quizes} to Quiz{thematics}
+	Question{thematics} to Thematic{questions}
+}
+
+// defining multiple OneToMany relationships with comments
+relationship OneToMany {
+	Answer to AnswerGroup{answers}
+    ThematicSynthesis to QuizAnswer{synthesis}
+    ClientAnswer to ThematicSynthesis{answers}
+}
+
+relationship ManyToOne {
+    UserAnswer{answer} to ThematicSynthesis
+}
+
+relationship OneToOne {
+	Structure to Client{structure}
+	SilentPartner to Structure{partner}
+    Address to Structure{address}
+}
+
+// Set pagination options
+paginate Question, Employee with infinite-scroll
+paginate Job with pagination
+
+// Use Data Transfer Objects (DTO)
+// dto * with mapstruct
+
+// Set service options to all except few
+service all with serviceImpl except FormulationRequest, FormulationResponse
+
+// Set an angular suffix
+// angularSuffix * with mySuffix
